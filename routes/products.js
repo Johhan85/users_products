@@ -30,6 +30,7 @@ routes.get('/getproduct/:id', async (req, res) => {
 routes.post('/addproduct', async (req, res) => {
     const name = req.body.name.toLowerCase();
     const description = req.body.description.toLowerCase();
+    const category_id = req.body.category_id;
     const price = req.body.price;
 
     const { error } = validation.productValidation(req.body);
@@ -38,7 +39,7 @@ routes.post('/addproduct', async (req, res) => {
     }
 
     try {
-        const addproduct = await db.addProduct(name, description, price);
+        const addproduct = await db.addProduct(name, description, category_id, price);
         res.json({info : "insert successfully"});
     } catch (error) {
         res.json(error);
@@ -66,6 +67,7 @@ routes.delete('/deleteproduct/:id', async (req, res) => {
 routes.put('/updateproduct/:id', async (req, res) => {
     const name = req.body.name.toLowerCase();
     const description = req.body.description.toLowerCase();
+    const category_id = req.body.category_id;
     const price = req.body.price;
     const id = req.params.id;
 
@@ -75,7 +77,7 @@ routes.put('/updateproduct/:id', async (req, res) => {
     }
 
     try {
-        const updateproduct = await db.updateProduct(name, description, price, id);
+        const updateproduct = await db.updateProduct(name, description, category_id, price, id);
         if(updateproduct.changes !== 0) {
             res.json({info : "update successfully"});
         }
@@ -84,6 +86,17 @@ routes.put('/updateproduct/:id', async (req, res) => {
         }
     } catch (error) {
         
+    }
+});
+
+routes.get('/searchprodbycat/:category', async (req, res) => {
+    const category = req.params.category.toLowerCase();
+    const searchprodbycat = await db.searchProdByCat(category);
+    if(searchprodbycat.length !== 0) {
+        res.json(searchprodbycat);
+    }
+    else {
+        res.json({info : `products with category: ${ category } is not found`});
     }
 });
 
