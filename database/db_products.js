@@ -5,7 +5,8 @@ const dbOpen = sqlite.open('./database/db_file.db', { Promise });
 
 const getProducts = async () => {
     try {
-        const sqlQuery = 'SELECT id, name, description, price FROM products';
+        const sqlQuery = 'SELECT products.id, products.name, products.description, category.category, products.price' 
+        + ' FROM products INNER JOIN category ON products.category_id = category.id;';
         const db = await dbOpen;
         return db.all(sqlQuery);
     } catch (error) {
@@ -15,7 +16,8 @@ const getProducts = async () => {
 
 const getProduct = async (id) => {
     try {
-        const sqlQuery = 'SELECT id, name, description, price FROM products where id = ?';
+        const sqlQuery = 'SELECT products.id, products.name, products.description, category.category, products.price' 
+        + ' FROM products INNER JOIN category ON products.category_id = category.id where products.id = ?;';
         const db = await dbOpen;
         return db.get(sqlQuery, id);
     } catch (error) {
@@ -23,11 +25,11 @@ const getProduct = async (id) => {
     }
 }
 
-const addProduct = async (name, description, price) => {
+const addProduct = async (name, description, category_id, price) => {
     try {
-        const sqlQuery = 'INSERT INTO products (name, description, price) VALUES (?,?,?)';
+        const sqlQuery = 'INSERT INTO products (name, description, category_id, price) VALUES (?,?,?,?)';
         const db = await dbOpen;
-        return db.run(sqlQuery, name, description, price);
+        return db.run(sqlQuery, name, description, category_id, price);
     } catch (error) {
         throw new Error(error);
     }
@@ -43,11 +45,24 @@ const deleteProduct = async (id) => {
     }
 }
 
-const updateProduct = async (name, description, price, id) => {
+const updateProduct = async (name, description, category_id, price, id) => {
     try {
-        const sqlQuery = 'UPDATE products SET name = ?, description = ?, price = ? where id = ?';
+        const sqlQuery = 'UPDATE products SET name = ?, description = ?, category_id = ?, price = ? where id = ?';
         const db = await dbOpen;
-        return db.run(sqlQuery, name, description, price, id);
+        return db.run(sqlQuery, name, description, category_id , price, id);
+    } catch (error) {
+        throw new Error(error);
+    }
+}
+
+const searchProdByCat = async (category) => {
+    try {
+        const sqlQuery = 'SELECT products.id, products.name, products.description, category.category, products.price' 
+                            + ' FROM products INNER JOIN category' 
+                                +' ON products.category_id = category.id'
+                                    +' WHERE category.category = ?';
+        const db = await dbOpen;
+        return db.all(sqlQuery, category);
     } catch (error) {
         throw new Error(error);
     }
@@ -58,5 +73,6 @@ module.exports = {
     getProduct: getProduct,
     addProduct: addProduct,
     deleteProduct: deleteProduct,
-    updateProduct : updateProduct
+    updateProduct : updateProduct,
+    searchProdByCat : searchProdByCat
 }
